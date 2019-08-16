@@ -26,6 +26,8 @@ DRIVERS = {
     }
 }
 
+from authicola import Authicola
+
 a = Authicola(DRIVERS)
 
 # default scope from config used
