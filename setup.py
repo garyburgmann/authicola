@@ -10,8 +10,11 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name=meta.__name__,
-    version='0.0.3',
-    packages=['authicola'],
+    version='0.0.4',
+    packages=[
+        'authicola',
+        'authicola.drivers',
+    ],
     install_requires=[
         'requests'
     ],

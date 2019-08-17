@@ -1,6 +1,6 @@
 """ Authicola root class """
 # from config import authicola
-from .drivers import (
+from authicola.drivers import (
     GoogleDriver
 )
 
