@@ -7,10 +7,10 @@ import requests
 from authicola.settings import DRIVER_CONFIG
 
 
-class GoogleDriver:
-    access_token_url = DRIVER_CONFIG['google']['access_token_url']
-    authorization_url = DRIVER_CONFIG['google']['authorization_url']
-    profile_url = DRIVER_CONFIG['google']['profile_url']
+class GitHubDriver:
+    access_token_url = DRIVER_CONFIG['github']['access_token_url']
+    authorization_url = DRIVER_CONFIG['github']['authorization_url']
+    profile_url = DRIVER_CONFIG['github']['profile_url']
     """
     Required: config
     Accepts: scopes, state
@@ -23,17 +23,16 @@ class GoogleDriver:
 
     def redirect_uri(self):
         """ Generate the redirect_uri to Google for client authorization """
-        if self._scopes:
+        if self.scopes:
             scopes = ' '.join(self._scopes)
         else:
             scopes = ''
         try:
             params = dict(
                 scope=scopes,
-                access_type='offline',
                 redirect_uri=self._config['redirect_uri'],
-                response_type='code',
-                client_id=self._config['client_id']
+                client_id=self._config['client_id'],
+                allow_signup=False
             )
             if self._state:
                 params.update(state=self._state)
@@ -131,8 +130,8 @@ class GoogleDriver:
             token_response = res.json()
         except ValueError as exc:
             raise ValueError(
-                'Error reading token response: {err}'
-                .format(str(exc))
+                'Error reading token response: {err}\n{data}'
+                .format(err=str(exc), data=res.text)
             )
 
         # Exchange the access token for a user

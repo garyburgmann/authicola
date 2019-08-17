@@ -1,8 +1,7 @@
 # Authicola
 A Python package offering convenient methods for OAuth2.0 authentication
 
-Currently only Google OAuth2.0 has been implemented
-
+Currently, Google and GitHub have been implemented
 
 Expects a config object passed into the class on instantiation of the Authicola class. 
 
@@ -38,13 +37,29 @@ authorization_url = a.driver('google').redirect_uri()
 authorization_url = a.driver('google', scopes=['email']).redirect_uri()
 # https://accounts.google.com/o/oauth2/v2/auth?scope=email&access_type=offline&redirect_uri=<your-redirect-uri>&response_type=code&client_id=<your-client-id>
 
-# only profile and email scopes requested manually, this time as method on the driver class, overrides config for driver
-authorization_url = a.driver('google').scope('email', 'profile').redirect_uri()
+# only profile and email scopes requested manually, this time as method on the driver class .scopes, overrides config for driver
+authorization_url = a.driver('google').scopes('email', 'profile').redirect_uri()
 # https://accounts.google.com/o/oauth2/v2/auth?scope=email+profile&access_type=offline&redirect_uri=<your-redirect-uri>&response_type=code&client_id=<your-client-id>
 
 ```
 
-On callback from the authentication provider, a params dict is expected for parsing to retrieve the user.
+An optional state parameter can be used in the same way as scope (without the default value), for prevention of CSRF attacks.
+
+E.g.
+
+```
+# not state param used
+authorization_url = a.driver('github').redirect_uri()
+
+# state param set as kwarg
+authorization_url = a.driver('github', state='state-string-here').redirect_uri()
+
+# state param set as class method state
+authorization_url = a.driver('github').state('state-string-here').redirect_uri()
+
+```
+
+On callback from the authentication provider, a params dict is expected for parsing to retrieve the user. An optional state parameter is also accepted, and if passed in it will be used to validate against the callback url params state param
 
 E.g.
 
@@ -68,4 +83,16 @@ user = a.driver('google').user(params)
     'locale': 'en-GB'
 }
 ###
+
+# or to validate the state between redirect and callback. the state sting can be any unguessable string you like
+def redirect(self):
+    state = uuid.uuid4().hex
+    self.request.session.set('github_redirect', state)
+    authorization_url = self.authicola.driver('github').state(state).redirect_uri()
+    return request().redirect(authorization_url)
+
+def callback(self):
+    state = self.request.session.get('github_redirect')
+    user = self.authicola.driver('github').user(request().all(), state)
+    return user
 ```

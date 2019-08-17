@@ -1,7 +1,8 @@
 """ Authicola root class """
 # from config import authicola
 from authicola.drivers import (
-    GoogleDriver
+    GoogleDriver,
+    GitHubDriver
 )
 
 
@@ -21,6 +22,8 @@ class Authicola:
             chosen_driver = None
             if name == 'google':
                 chosen_driver = GoogleDriver
+            elif name == 'github':
+                chosen_driver = GitHubDriver
             if chosen_driver:
                 return chosen_driver(
                     config=self.config[name],
