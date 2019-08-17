@@ -11,7 +11,6 @@ class GoogleDriver:
     access_token_url = DRIVER_CONFIG['google']['access_token_url']
     authorization_url = DRIVER_CONFIG['google']['authorization_url']
     profile_url = DRIVER_CONFIG['google']['profile_url']
-
     """
     Required: config
     Accepts: scopes
@@ -19,6 +18,7 @@ class GoogleDriver:
     def __init__(self, config, **kwargs):
         # optionally specify scopes, otherwise default to Authicola config
         self.scopes = kwargs.get('scopes', config.get('scopes'))
+        self.state = kwargs.get('state')
         self._config = config
 
     def redirect_uri(self):
@@ -35,6 +35,8 @@ class GoogleDriver:
                 response_type='code',
                 client_id=self._config['client_id']
             )
+            if self.state:
+                params.update(state=self.state)
             endpoint = \
                 '{auth_url}?{params}' \
                 .format(
@@ -59,10 +61,17 @@ class GoogleDriver:
         self.scopes = args
         return self
 
-    def user(self, params):
+    def set_state(self, state):
+        """ Set state """
+        self.state = state
+        return self
+
+    def user(self, params, state=None):
         """ Try and get the user from the oAuth flow """
         code = params.get('code')
         err = params.get('error')
+        state_param = params.get('state')
+
         # catch returned error param on callback
         if not code and err:
             raise Exception(
@@ -74,6 +83,11 @@ class GoogleDriver:
             raise Exception(
                 'Authorization code is missing from params: {params}'
                 .format(params=str(params))
+            )
+
+        if state and state != state_param:
+            raise Exception(
+                'Invalid state parameter detected'
             )
 
         try:
